@@ -1,0 +1,19 @@
+{
+	Pages: [
+		{
+			urlPrefix: "www.golang.org",
+			tree: [
+				"div.Test",
+				{
+					root: "css-selector",
+					
+				},
+			],
+		},
+	],
+	urls: [
+		"url1 to scrape",
+		"url2 to scrape",
+	],
+}
+

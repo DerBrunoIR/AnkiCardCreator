@@ -1,0 +1,17 @@
+Overview
+	section.Documentation-overview
+Index
+	section.Documentation-index
+Examples 
+	section.Documentation-examples
+Constants
+	section.Documentation-constants > div.Documentation-declaration
+	section.Documentation-constants > div.Documentation-declaration ~ p
+	section.Documentation-constants > div.Documentation-declaration > pre > span
+Variables
+section.Documentation-variables > div.Documentation-declaration
+	section.Documentation-variables > div.Documentation-declaration ~ p
+Functions
+	section.Documentation-functions > div.Documentation-function
+Types
+	section.Documentation-types > div.Documentation-type

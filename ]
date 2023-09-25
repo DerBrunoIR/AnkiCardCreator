@@ -1,0 +1,47 @@
+package HTMLFilter_test
+
+import (
+	HTMLFilter "gostdlibintoankicards/pkg"
+	"regexp"
+	"strings"
+	"testing"
+
+	"golang.org/x/net/html"
+)
+
+var (
+	htmlSrc string = 
+`<html>
+	<head></head>
+	<body>
+		<div>
+			<div class="eins">
+				<p>Hello</p>
+			</div>
+		</div>
+		<div>
+			<div class="zwei">
+				<p>World</p>
+			</div>
+		</div>
+		<div>
+			<div class="drei">
+				<p>!</p>
+			</div>
+		</div>
+	</body>
+</html>`
+)
+
+func TestMatchingNodes(t *testing.T) {
+	root, err := html.Parse(strings.NewReader(htmlSrc))
+	if err != nil {
+		t.Fatal(err)
+	}
+	pattern, err := regexp.Compile("")
+	if err != nil {
+		t.Fatal(err)
+	}
+	nodes := HTMLFilter.MatchingNodes(root, pattern)
+}
+

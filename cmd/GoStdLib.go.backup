@@ -1,0 +1,360 @@
+package gostdlibintoankicards
+
+import (
+	"bufio"
+	"bytes"
+	"errors"
+	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"os"
+	"strings"
+
+	"slices"
+
+	"github.com/atselvan/ankiconnect"
+	"github.com/ericchiang/css"
+	"golang.org/x/net/html"
+)
+
+func Parallel[T any](out chan<-T, in <-chan T, parallel func(chan<-T, <-chan T), workerCount int) {
+	for i := 0; i < workerCount; i++ {
+		go parallel(out, in)
+	}
+}
+
+const (
+	urlFile = "./urls.txt"
+)
+
+type Task struct {
+	url, deck string 
+	html []byte
+	notes []ankiconnect.Note
+	err error
+}
+
+func (t *Task) AddNote(front, back string) {
+	t.notes = append(t.notes, ankiconnect.Note{
+		DeckName: t.deck,
+		ModelName: "GoLib", 
+		Fields: ankiconnect.Fields{
+			"Front": front,
+			"Back": back,
+		},
+	})
+	//fmt.Printf("--------------------\n%s\n---------------\n%s\n\n", front, back)
+}
+
+func (t Task) String() string {
+	return fmt.Sprintf("Task{ deck: %s, err: %v }", t.deck, t.err)
+}
+
+func NewTask(url, deck string) Task {
+	return Task{
+		url: url,
+		deck: deck,
+		notes: make([]ankiconnect.Note, 0),
+		err: nil,
+	}
+}
+
+func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
+	client := ankiconnect.NewClient()
+	err := client.Ping()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("connected to anki")
+	const ( maxGoRoutines = 10
+	)
+
+	downloadQueue := make(chan Task, 0)
+	processQueue := make(chan Task, 0)
+	ankiQueue := make(chan Task, 0)
+
+	go TaskGenerator("./urls.txt", downloadQueue)
+	go Parallel(processQueue, downloadQueue, HtmlDownloader, maxGoRoutines)	
+	go Parallel(ankiQueue, processQueue, HtmlProcessor, maxGoRoutines)
+
+	go NoteUploader(client, ankiQueue)
+
+	fmt.Println("press enter to exit...")
+	fmt.Scanln()
+}
+
+func TaskGenerator(fp string, out chan<-Task) {
+	fmt.Printf("loading urls from '%s'\n", fp)
+	file, err := os.Open(fp)
+	if err != nil {
+		log.Fatal("TaskGenerator::", err)
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		var url, deck string
+		n, err := fmt.Sscanf(line, "%s %s", &deck, &url)
+		if n == 0 && err == io.EOF { // ignore empty lines
+			continue
+		}
+		if err != nil {
+			log.Fatal("TaskGenerator::", err)
+		}
+		task := NewTask(url, deck)
+		fmt.Println("created new task:", task)
+		out <- task
+	}
+}
+
+func HtmlDownloader(out chan<-Task, in <-chan Task) {
+	for task := range in {
+		fmt.Printf("downloading '%s'\n", task.url)
+
+		resp, err := http.Get(task.url)
+		if err != nil {
+			task.err = fmt.Errorf("HtmlDownloader::failed to downlaod html for task %v: %w", task, err)
+			out <- task
+			continue
+		}
+
+		html, err := io.ReadAll(resp.Body)
+		if err != nil {
+			task.err = fmt.Errorf("HtmlDownloader::failed to read html body for %v: %w", task, err)
+			out <- task
+			continue
+		}
+		task.html = html
+		fmt.Printf("received %d bytes for %v\n", len(task.html), task)
+		out<-task
+		resp.Body.Close()
+	}
+}
+
+type RootedSelectorMap struct {
+	root *css.Selector
+	selectors map[string]*css.Selector
+}
+
+func NewRootedSelectorMap(root string, selector_table map[string]string) (*RootedSelectorMap, error) {
+	root_sel, err := css.Parse(root)
+	if err != nil {
+		return nil, err
+	}
+	parsed_selector_table := make(map[string]*css.Selector, len(selector_table))
+	for k, selector_string := range selector_table {
+		parsed_selector, err := css.Parse(selector_string)
+		if err != nil {
+			return nil, err
+		}
+		parsed_selector_table[k] = parsed_selector
+	}
+	return &RootedSelectorMap{
+		root: root_sel,
+		selectors: parsed_selector_table,
+	}, nil
+}
+
+func (rms *RootedSelectorMap) Select(node *html.Node) []map[string][]*html.Node {
+	roots := rms.root.Select(node)
+	res := make([]map[string][]*html.Node, 0, len(roots))
+	for _, root := range roots {
+		selmap := make(map[string][]*html.Node)
+		for k, sel := range rms.selectors {
+			selmap[k] = sel.Select(root)
+		}
+		res = append(res, selmap)
+	}
+	return res
+}
+
+func RenderConcatenated(nodes... *html.Node) string {
+	var sb strings.Builder
+	for _, node := range nodes {
+		err := html.Render(&sb, node)
+		if err != nil {
+			log.Fatal(err)
+		}
+		sb.Write([]byte("\n"))
+	}
+	return sb.String()
+}
+
+func HtmlProcessor(out chan<- Task, in <-chan Task) {
+	var front, back strings.Builder
+
+	for task := range in {
+		node, err := html.Parse(bytes.NewBuffer(task.html))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// const 
+
+		const_selector, err := css.Parse("section.Documentation-constants div.Documentation-declaration")
+		if err != nil {
+			log.Fatal(err)
+		}
+		constHeader_selector, err := css.Parse("span[data-kind='constant']")
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, elem := range const_selector.Select(node) {
+			// front
+			front.WriteString("const (\n")
+			for _, span := range constHeader_selector.Select(elem) {
+				id, err := GetHtmlAttributeByKey(span, "id")
+				if err != nil { 
+					log.Fatal(err)
+				}
+				front.WriteString(id.Val + "\n")
+			}
+			front.WriteString("\n)")
+
+			// back
+			back.WriteString(RenderConcatenated(elem))
+			
+			task.AddNote(front.String(), back.String())
+			front.Reset()
+			back.Reset()
+		}
+
+		// var 
+
+		var_selector, err := css.Parse("section.Documentation-variables div.Documentation-declaration")
+		if err != nil {
+			log.Fatal(err)
+		}
+		varHeader_selector, err := css.Parse("span[data-kind='variable']")
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, elem := range var_selector.Select(node) {
+			// front
+			front.WriteString("var (\n")
+			for _, span := range varHeader_selector.Select(elem) {
+				id, err := GetHtmlAttributeByKey(span, "id")
+				if err != nil { 
+					log.Fatal(err)
+				}
+				front.WriteString(id.Val + "\n")
+			}
+			front.WriteString("\n)")
+
+			// back
+			back.WriteString(RenderConcatenated(elem))
+			
+			task.AddNote(front.String(), back.String())
+			front.Reset()
+			back.Reset()
+		}
+
+		// type
+
+		type_selector, err := css.Parse("div.Documentation-type")
+		if err != nil {
+			log.Fatal(err)
+		}
+		typeHeader_selector, err := css.Parse("h4.Documentation-typeHeader")
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, elem := range type_selector.Select(node) {
+			// front
+			headers := typeHeader_selector.Select(elem)
+			if len(headers) == 0 {
+				log.Fatal("expected len(headers) > 0")
+			}
+			id, err := GetHtmlAttributeByKey(headers[0], "id")
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Fprintf(&front, "type %s", id.Val)
+
+			// back
+			back.WriteString(RenderConcatenated(elem))
+
+			task.AddNote(front.String(), back.String())
+			front.Reset()
+			back.Reset()
+		}
+
+		// func
+
+		func_selector, err := css.Parse("div.Documentation-function")
+		if err != nil {
+			log.Fatal(err)
+		}
+		funcHeader_selector, err := css.Parse("h4.Documentation-functionHeader")
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, elem := range func_selector.Select(node) {
+			// front
+			headers := funcHeader_selector.Select(elem)
+			if len(headers) == 0 {
+				log.Fatal("expected len(headers) > 0")
+			}
+			id, err := GetHtmlAttributeByKey(headers[0], "id")
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Fprintf(&front, "func %s", id.Val)
+
+			// back
+			back.WriteString(RenderConcatenated(elem))
+
+			task.AddNote(front.String(), back.String())
+			front.Reset()
+			back.Reset()
+		}
+
+
+		
+		fmt.Printf("Found %d notes for %v\n", len(task.notes), task)
+		out <- task 
+	}
+
+}
+
+func GetHtmlAttribute(node *html.Node, f func(attr html.Attribute) bool) (*html.Attribute, error) {
+	for _, attr := range node.Attr {
+		if f(attr) {
+			return &attr, nil
+		}
+	}
+	return nil, errors.New("no matching attribute found")
+}
+
+func GetHtmlAttributeByKey(node *html.Node, key string) (*html.Attribute, error) {
+	return GetHtmlAttribute(node, func(attr html.Attribute) bool {
+		return attr.Key == key
+	})
+}
+
+func NoteUploader(client *ankiconnect.Client, in <-chan Task) {
+	decks, err := client.Decks.GetAll()
+	if err != nil {
+		log.Fatal("NoteUplaoder::DeckRequestFailed::", err)
+	}
+	for task := range in {
+		if !slices.Contains(*decks, task.deck) {
+			err := client.Decks.Create(task.deck)
+			if err != nil {
+				log.Fatal("NoteUploader::DeckCreationFailed::", err)
+			}
+			fmt.Printf("created deck '%s'\n", task.deck)
+		}
+		for _, note := range task.notes {
+			err := client.Notes.Add(note)
+			if err != nil {
+				log.Fatal("NoteUploader::UploadFailed::", err)
+			}
+		}
+	}
+}
+
+

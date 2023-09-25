@@ -1,0 +1,2 @@
+GoLang::StdLib::Encoding::base32 https://pkg.go.dev/encoding/base32@go1.21.1
+GoLang::StdLib::Encoding::base64 https://pkg.go.dev/encoding/base64@go1.21.1

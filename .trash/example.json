@@ -1,0 +1,7 @@
+{
+	"VideoPlay": {
+		"root": "div.VideoPlayer",
+		"playerbutton": "div button",
+		"recommedations": "div div.Recommedations"
+	}
+}
