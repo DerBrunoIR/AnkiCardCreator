@@ -221,7 +221,7 @@ func HtmlProcessor(out chan<- Task, in <-chan Task) {
 				HTMLFilter.DeepCopySubtrees(root, nodes),
 			)
 
-			task.AddNote(front, "", "")
+			task.AddNote(front, front, "")
 		}
 
 		// constants
@@ -266,7 +266,7 @@ func HtmlProcessor(out chan<- Task, in <-chan Task) {
 				HTMLFilter.DeepCopySubtrees(root, nodes),
 			)
 
-			task.AddNote(front, "", "")
+			task.AddNote(front, front, "")
 		}
 
 
