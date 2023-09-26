@@ -26,12 +26,12 @@ statistics:
 
 hash.adler32.New
 
--  front: https://pasteboard.co/H3FqayVfVYcP.png
-- back: https://pasteboard.co/5AK8T4914V8u.png
-- 
+-  ![front](https://pasteboard.co/H3FqayVfVYcP.png)
+- ![back](https://pasteboard.co/5AK8T4914V8u.png)
+  
 sync.atomic.Uintptr
 
-- front: https://pasteboard.co/SaHUXpEXCGlk.png
-- back: https://pasteboard.co/wAIGyiVvMRGW.png
+- ![front](https://pasteboard.co/SaHUXpEXCGlk.png)
+- ![back](https://pasteboard.co/wAIGyiVvMRGW.png)
 
 This deck contains content published under a BSD license from "https://go.dev/".
