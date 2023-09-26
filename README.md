@@ -22,16 +22,12 @@ statistics:
 - 260 diffrent decks
 - in total 3471 cards, seems like a lot, however the average is pretty low
 
-## random examples
-
-hash.adler32.New
-
--  ![front](https://pasteboard.co/H3FqayVfVYcP.png)
-- ![back](https://pasteboard.co/5AK8T4914V8u.png)
+## random example
   
 sync.atomic.Uintptr
 
-- ![front](https://pasteboard.co/SaHUXpEXCGlk.png)
-- ![back](https://pasteboard.co/wAIGyiVvMRGW.png)
+- ![Front](https://github.com/DerBrunoIR/AnkiCardCreator/assets/95578637/0a21eb67-07e0-461e-957e-ef959b949cd1)
+- ![Back](https://github.com/DerBrunoIR/AnkiCardCreator/assets/95578637/a2278989-fc10-4584-9ae3-908c01b633d6)
+
 
 This deck contains content published under a BSD license from "https://go.dev/".
