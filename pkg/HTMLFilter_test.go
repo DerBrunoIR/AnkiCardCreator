@@ -1,4 +1,4 @@
-package HTMLFilter
+package HTMLTrees
 
 import (
 	"fmt"

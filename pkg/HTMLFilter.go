@@ -1,4 +1,4 @@
-package HTMLFilter
+package HTMLTrees
 
 import (
 	"log"
@@ -142,4 +142,16 @@ func DeepCopySubtrees(root *html.Node, subtrees []*html.Node) (*html.Node) {
 
 }
 
-
+func Modify(node *html.Node, f func(*html.Node) error) error {
+	if node == nil {
+		return nil
+	}
+	f(node)
+	for c := node.FirstChild; c != nil; c = c.NextSibling {
+		err := Modify(c, f)
+		if err != nil {
+			return err 
+		}
+	}
+	return nil
+}

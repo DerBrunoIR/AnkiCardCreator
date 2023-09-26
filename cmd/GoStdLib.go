@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	HTMLFilter "gostdlibintoankicards/pkg"
+	HTMLTrees "gostdlibintoankicards/pkg"
 	"io"
 	"log"
 	"net/http"
@@ -162,6 +162,21 @@ func HtmlProcessor(out chan<- Task, in <-chan Task) {
 		if err != nil {
 			log.Fatal("HTMLProcessor::root::", err)
 		}
+		
+		// local hrefs to global hrefs
+
+		HTMLTrees.Modify(root, func(node *html.Node) (res error) {
+			res = nil
+			for i := 0; i < len(node.Attr); i++ {
+				if node.Attr[i].Key == "href" {
+					// deal with 'abc/def#ghi' and '#ghi' and 'https://...' TODO
+				}
+				i++
+			}
+			return
+		})
+
+		// selectors 
 
 		doc_src_header, err := css.Parse("a.Documentation-source")
 		if err != nil {
@@ -173,9 +188,9 @@ func HtmlProcessor(out chan<- Task, in <-chan Task) {
 				log.Fatalf("HTMLProcessor::doc_src_add_prefix::no nodes found\n")
 			}
 			for _, node := range nodes {
-				//fmt.Printf("Debug: %s\n", HTMLFilter.HTMLString(node))
+				//fmt.Printf("Debug: %s\n", HTMLTrees.HTMLString(node))
 				node.FirstChild.Data = name + "." + node.FirstChild.Data
-				//fmt.Printf("Debug: %s\n", HTMLFilter.HTMLString(node))
+				//fmt.Printf("Debug: %s\n", HTMLTrees.HTMLString(node))
 			}
 		}
 
@@ -203,7 +218,7 @@ func HtmlProcessor(out chan<- Task, in <-chan Task) {
 					log.Fatal(err)
 				}
 				pattern := regexp.MustCompile(fmt.Sprintf(`(?P<id>%s)`,id.Val))
-				nodes := HTMLFilter.MatchingNodes(span, pattern)
+				nodes := HTMLTrees.MatchingNodes(span, pattern)
 				//fmt.Println("debug: len(nodes) = ", len(nodes))
 				for _, node := range nodes {
 					node.Data = pattern.ReplaceAllString(node.Data, task.ImportPath() + ".${id}")
@@ -217,8 +232,8 @@ func HtmlProcessor(out chan<- Task, in <-chan Task) {
 				nodes = append(nodes, c)
 			}
 
-			front := HTMLFilter.HTMLString(
-				HTMLFilter.DeepCopySubtrees(root, nodes),
+			front := HTMLTrees.HTMLString(
+				HTMLTrees.DeepCopySubtrees(root, nodes),
 			)
 
 			task.AddNote(front, front, "")
@@ -248,7 +263,7 @@ func HtmlProcessor(out chan<- Task, in <-chan Task) {
 					log.Fatal(err)
 				}
 				pattern := regexp.MustCompile(fmt.Sprintf(`(?P<id>%s)`,id.Val))
-				nodes := HTMLFilter.MatchingNodes(span, pattern)
+				nodes := HTMLTrees.MatchingNodes(span, pattern)
 				//fmt.Println("debug: len(nodes) = ", len(nodes))
 				for _, node := range nodes {
 					node.Data = pattern.ReplaceAllString(node.Data, task.ImportPath() + ".${id}")
@@ -262,8 +277,8 @@ func HtmlProcessor(out chan<- Task, in <-chan Task) {
 				nodes = append(nodes, c)
 			}
 
-			front := HTMLFilter.HTMLString(
-				HTMLFilter.DeepCopySubtrees(root, nodes),
+			front := HTMLTrees.HTMLString(
+				HTMLTrees.DeepCopySubtrees(root, nodes),
 			)
 
 			task.AddNote(front, front, "")
@@ -292,11 +307,11 @@ func HtmlProcessor(out chan<- Task, in <-chan Task) {
 			header := func_headers[i]
 			doc_src_add_prefix(header, task.ImportPath())
 
-			back := HTMLFilter.HTMLString(
-				HTMLFilter.DeepCopySubtrees(root, []*html.Node{function}),
+			back := HTMLTrees.HTMLString(
+				HTMLTrees.DeepCopySubtrees(root, []*html.Node{function}),
 			)
-			front := HTMLFilter.HTMLString(
-				HTMLFilter.DeepCopySubtrees(root, []*html.Node{header}),
+			front := HTMLTrees.HTMLString(
+				HTMLTrees.DeepCopySubtrees(root, []*html.Node{header}),
 			)
 			task.AddNote(front, back, "")
 		}
@@ -322,11 +337,11 @@ func HtmlProcessor(out chan<- Task, in <-chan Task) {
 			type_ := types[i]
 			header := type_headers[i]
 			doc_src_add_prefix(header, task.ImportPath())
-			back := HTMLFilter.HTMLString(
-				HTMLFilter.DeepCopySubtrees(root, []*html.Node{type_}),
+			back := HTMLTrees.HTMLString(
+				HTMLTrees.DeepCopySubtrees(root, []*html.Node{type_}),
 			)
-			front := HTMLFilter.HTMLString(
-				HTMLFilter.DeepCopySubtrees(root, []*html.Node{header}),
+			front := HTMLTrees.HTMLString(
+				HTMLTrees.DeepCopySubtrees(root, []*html.Node{header}),
 			)
 			task.AddNote(front, back, "")
 		}
