@@ -5,7 +5,7 @@ AnkiConnect addon is necessary.
 
 ## Deck
 
-[AnkiWebLink](https://ankiweb.net/shared/decks?search=GoLang%20Standard%20Libary) hopfully available in 24 hours, alternative via [File]("GoLang.apkg")
+[AnkiWebLink](https://ankiweb.net/shared/decks?search=GoLang%20Standard%20Libary) hopfully available in 24 hours, alternative via [GoLang.apkg]("GoLang.apkg")
 
 version: Go@1.21.1 
 
