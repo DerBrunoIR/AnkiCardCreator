@@ -10,6 +10,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"regexp"
 	"slices"
@@ -164,12 +165,18 @@ func HtmlProcessor(out chan<- Task, in <-chan Task) {
 		}
 		
 		// local hrefs to global hrefs
-
+		
+		base, err := url.Parse(task.url)
 		HTMLTrees.Modify(root, func(node *html.Node) (res error) {
 			res = nil
 			for i := 0; i < len(node.Attr); i++ {
 				if node.Attr[i].Key == "href" {
-					// deal with 'abc/def#ghi' and '#ghi' and 'https://...' TODO
+					link, err := url.Parse(node.Attr[i].Val)
+					if err == nil {
+						target := base.ResolveReference(link)
+						node.Attr[i].Val = target.String()
+						//fmt.Printf("Debug: %#v\n", target.String())
+					}
 				}
 				i++
 			}
@@ -384,7 +391,7 @@ func NoteUploader(client *ankiconnect.Client, in <-chan Task) {
 			log.Printf("'%s' created deck\n", task.deck)
 		}
 		if len(task.notes) == 0 {
-			log.Fatalf("%+v contains no cards\n'''\n%#v'''\n", task.deck, string(task.html))
+			log.Printf("%#v contains no cards!\n", task.deck)
 		}
 		i := 0
 		Outer: for i < len(task.notes) {
