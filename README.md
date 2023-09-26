@@ -3,7 +3,10 @@
 This repo contains a script to extract anki cards from go standard libary.
 AnkiConnect addon is necessary.
 
-## [Deck]( https://ankiweb.net/shared/decks?search=GoLang%20Standard%20Libary)
+## Deck
+
+[Link](https://ankiweb.net/shared/decks?search=GoLang%20Standard%20Libary) hopfully available in 24 hours
+
 version: Go@1.21.1 
 
 Hi,
