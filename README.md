@@ -5,7 +5,7 @@ AnkiConnect addon is necessary.
 
 ## Deck
 
-[AnkiWebLink](https://ankiweb.net/shared/info/1050662530)
+Download: [AnkiWebLink](https://ankiweb.net/shared/info/1050662530)
 
 version: Go@1.21.1 
 
