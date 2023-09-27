@@ -5,7 +5,7 @@ AnkiConnect addon is necessary.
 
 ## Deck
 
-[AnkiWebLink]([https://ankiweb.net/shared/decks?search=GoLang%20Standard%20Libary](https://ankiweb.net/shared/info/1050662530))
+[AnkiWebLink](https://ankiweb.net/shared/info/1050662530)
 
 version: Go@1.21.1 
 
