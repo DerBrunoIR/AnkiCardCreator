@@ -1,12 +1,15 @@
 # AnkiCardCreator
 
-This repo contains a script to extract anki cards from go standard libary.
+This repo is meant to contain scripts to extract anki cards from different sources. At the moment only one source supported.
+
+# Sources
+
+### pkg.go.dev (GoLang package documentation)
 AnkiConnect addon is necessary.
 
-## Deck
+#### StdLib 
 
-Download: [AnkiWebLink](https://ankiweb.net/shared/info/1050662530)
-
+available at: [AnkiWebLink](https://ankiweb.net/shared/info/1050662530)
 version: Go@1.21.1 
 
 Hi,
