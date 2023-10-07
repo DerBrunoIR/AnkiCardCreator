@@ -26,7 +26,7 @@ statistics:
 - std = 23.52 cards/deck
 - avg = 13.35 cards/deck
 - 260 diffrent decks
-- in total 3471 cards, seems like a lot, however the average per package is pretty low
+- in total 3471 cards
 
 ## random example
   
