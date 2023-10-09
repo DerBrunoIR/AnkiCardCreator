@@ -8,7 +8,7 @@ This repo is meant to contain scripts to extract anki cards from different sourc
 AnkiConnect addon is necessary.
 
 
-# Decks
+# Public Decks
 
 ### StdLib 
 
