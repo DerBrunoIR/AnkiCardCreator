@@ -1,6 +1,6 @@
 # AnkiCardCreator
 
-This repo is meant to contain scripts to extract anki cards from different sources. At the moment only one source supported.
+This repo is meant to contain scripts to extract anki cards from different sources. At the moment only one source is supported.
 
 # Sources
 
