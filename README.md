@@ -32,7 +32,7 @@ statistics:
   
 `sync.atomic.Uintptr` 
 
-- ![Front](https://github.com/DerBrunoIR/AnkiCardCreator/assets/95578637/0a21eb67-07e0-461e-957e-ef959b949cd1)
+- <img src="https://github.com/DerBrunoIR/AnkiCardCreator/assets/95578637/0a21eb67-07e0-461e-957e-ef959b949cd1" height=200 alt=Front/>
 - ![Back](https://github.com/DerBrunoIR/AnkiCardCreator/assets/95578637/a2278989-fc10-4584-9ae3-908c01b633d6)
 
 
