@@ -17,7 +17,7 @@ version: Go@1.21.1
 
 Hi,
 
-I created this deck mainly for personal use. This deck contains all packages (even internal ones) from https://pkg.go.dev/std. For each package i genrated for all sub packages and for each variable block, constant block, function and type a single card by a carful selection of html elements from the standards libaries webpage. All links should work. For easy access i mirrored the hirachical structure from the standard libary.
+I created this deck mainly for personal use. This deck contains all packages (even internal ones) from https://pkg.go.dev/std. For each package i genrated for each variable div, constant div, function div and type div a single card by a carful selection of html elements from the standards libaries webpage. All links should work. For easy access i mirrored the hirachical structure from the standard libary.
 
 statistics:
 
