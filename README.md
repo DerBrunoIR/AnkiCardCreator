@@ -6,8 +6,7 @@ This repo is meant to contain scripts to extract anki cards from different sourc
 1. open Anki and install AnkiConnect
 2. run the program
 
-# Sources
+# published decks
 
-### pkg.go.dev/std@go1.21.1
-
+## pkg.go.dev/std@go1.21.1
 available at: [AnkiWeb](https://ankiweb.net/shared/info/1050662530)
