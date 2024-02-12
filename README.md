@@ -10,5 +10,5 @@ This repo is meant to contain scripts to extract anki cards from different sourc
 
 # published decks
 
-## pkg.go.dev/std@go1.21.1
+## pkg.go.dev/std@go1.22.0
 available at: [AnkiWeb](https://ankiweb.net/shared/info/1050662530)
