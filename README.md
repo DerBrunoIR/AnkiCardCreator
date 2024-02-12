@@ -4,7 +4,7 @@ This repo is meant to contain scripts to extract anki cards from different sourc
 
 # how to run
 1. open Anki and install AnkiConnect
-2. run the program
+2. `go run cmd/GoStdLib.go`
 
 # published decks
 
