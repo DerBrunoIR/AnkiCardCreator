@@ -1,12 +1,17 @@
 package main
 
+/*
+
+This script creates anki cards for each url in urlFile
+
+*/
+
 import (
 	"bufio"
 	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	HTMLTrees "gostdlibintoankicards/pkg"
 	"io"
 	"log"
 	"net/http"
@@ -20,6 +25,8 @@ import (
 	"github.com/atselvan/ankiconnect"
 	"github.com/ericchiang/css"
 	"golang.org/x/net/html"
+
+	HTMLTrees "gostdlibintoankicards/pkg"
 )
 
 func Parallel[T any](out chan<-T, in <-chan T, parallel func(chan<-T, <-chan T), workerCount int) {
@@ -29,7 +36,7 @@ func Parallel[T any](out chan<-T, in <-chan T, parallel func(chan<-T, <-chan T),
 }
 
 const (
-	urlFile = "./urls.txt"
+	urlFile = "./urls_1.22.0.txt"
 )
 
 type Task struct {
@@ -77,7 +84,6 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	client := ankiconnect.NewClient()
-	client.Decks.Delete("GoLang") // TODO remove
 	err := client.Ping()
 	if err != nil {
 		log.Fatal("main::client.Ping::", err)
@@ -88,7 +94,7 @@ func main() {
 	processQueue := make(chan Task, 100)
 	ankiQueue := make(chan Task, 1000)
 
-	go TaskGenerator("./urls.txt", downloadQueue)
+	go TaskGenerator(urlFile, downloadQueue)
 	go Parallel(processQueue, downloadQueue, HtmlDownloader, 5)	
 	go Parallel(ankiQueue, processQueue, HtmlProcessor, 10)
 

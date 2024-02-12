@@ -5,6 +5,8 @@ This repo is meant to contain scripts to extract anki cards from different sourc
 # how to run
 1. open Anki and install AnkiConnect
 2. `go run cmd/GoStdLib.go`
+3. wait until no more logs appear
+4. kill the program
 
 # published decks
 
